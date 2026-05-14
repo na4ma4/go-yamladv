@@ -1,0 +1,19 @@
+group:
+  bedroom:
+    name: "Bedroom"
+    entities:
+      - light.bedroom_lamp
+      - light.bedroom_overhead
+  hallway:
+    name: "Hallway"
+    entities:
+      - light.hallway
+      - thermostat.home
+  front_yard:
+    name: "Front Yard"
+    entities:
+      - light.front_porch
+      - light.security
+      - light.pathway
+      - sensor.mailbox
+      - camera.front_porch

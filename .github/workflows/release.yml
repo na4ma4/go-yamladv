@@ -1,0 +1,20 @@
+name: "Release"
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: "Release Please"
+    uses: na4ma4/actions/.github/workflows/release-please.yml@main
+    with:
+      artifacts: false
+    secrets:
+      RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}

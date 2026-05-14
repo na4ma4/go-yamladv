@@ -1,0 +1,2 @@
+alexa:
+  intents: !include_dir_named alexa/

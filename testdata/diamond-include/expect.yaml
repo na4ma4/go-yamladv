@@ -1,0 +1,12 @@
+b:
+  description: |
+    From B
+  items:
+    - name: 1
+    - name: 2
+c:
+  description: |
+    From C
+  items:
+    - name: 1
+    - name: 2

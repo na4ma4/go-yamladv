@@ -1,0 +1,8 @@
+speech:
+  type: plaintext
+  text: >
+    {%- if is_state('device_tracker.iphone', 'home') -%}
+      iPhone is home.
+    {%- else -%}
+      iPhone is not home.
+    {% endif %}

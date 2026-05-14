@@ -1,0 +1,8 @@
+front_yard:
+  name: "Front Yard"
+  entities:
+    - light.front_porch
+    - light.security
+    - light.pathway
+    - sensor.mailbox
+    - camera.front_porch

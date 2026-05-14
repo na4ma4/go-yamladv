@@ -1,0 +1,9 @@
+alias: "Automation 1"
+triggers:
+  - trigger: state
+    entity_id: device_tracker.iphone
+    to: "home"
+actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.entryway

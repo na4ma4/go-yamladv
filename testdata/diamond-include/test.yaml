@@ -1,0 +1,2 @@
+b: !include b.yaml
+c: !include c.yaml

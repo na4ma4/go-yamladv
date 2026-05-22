@@ -64,6 +64,7 @@ func TestDecoderFixtures(t *testing.T) {
 		"6abc0a89-7237-4065-a0da-68e3eda2beea",
 		"ff829067-b9e4-45cc-b733-04a79f2ae8fb",
 		"diamond-include",
+		"deepmerge",
 	}
 
 	for _, tt := range tests {
@@ -72,4 +73,10 @@ func TestDecoderFixtures(t *testing.T) {
 			loadTestCase(t, tt)
 		})
 	}
+}
+
+func TestDeepMerge(t *testing.T) {
+	t.Parallel()
+
+	loadTestCase(t, "deepmerge")
 }

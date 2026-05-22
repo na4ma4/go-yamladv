@@ -232,15 +232,21 @@ func handleDirMergeNamed(node *yaml.Node, baseDir string, seen map[string]struct
 				nodeKindName(doc.Kind),
 			)
 		}
-		// Merge key-value pairs; for duplicate keys, replace the existing entry
+		// Merge key-value pairs; for duplicate keys, deep-merge if both values are maps
 		for i := 0; i+1 < len(doc.Content); i += 2 {
 			keyNode := doc.Content[i]
 			valNode := doc.Content[i+1]
 			keyName := keyNode.Value
 			if prevIdx, exists := seenKeys[keyName]; exists {
-				// Replace existing key-value pair
-				mapping.Content[prevIdx] = keyNode
-				mapping.Content[prevIdx+1] = valNode
+				existingVal := mapping.Content[prevIdx+1]
+				if existingVal.Kind == yaml.MappingNode && valNode.Kind == yaml.MappingNode {
+					// Deep merge the two mapping nodes
+					deepMergeInto(existingVal, valNode)
+				} else {
+					// Replace existing key-value pair
+					mapping.Content[prevIdx] = keyNode
+					mapping.Content[prevIdx+1] = valNode
+				}
 			} else {
 				// Append new key-value pair
 				seenKeys[keyName] = len(mapping.Content)
@@ -251,6 +257,35 @@ func handleDirMergeNamed(node *yaml.Node, baseDir string, seen map[string]struct
 
 	replaceNode(node, mapping)
 	return nil
+}
+
+// deepMergeInto merges key-value pairs from src into dst, both of which must be
+// MappingNodes. For duplicate keys where both values are maps, the merge
+// recurses; otherwise the src value replaces the dst value.
+func deepMergeInto(dst, src *yaml.Node) {
+	seenKeys := make(map[string]int) // key name → index in dst.Content
+	for i := 0; i+1 < len(dst.Content); i += 2 {
+		seenKeys[dst.Content[i].Value] = i
+	}
+
+	for i := 0; i+1 < len(src.Content); i += 2 {
+		keyNode := src.Content[i]
+		valNode := src.Content[i+1]
+		keyName := keyNode.Value
+
+		if prevIdx, exists := seenKeys[keyName]; exists {
+			existingVal := dst.Content[prevIdx+1]
+			if existingVal.Kind == yaml.MappingNode && valNode.Kind == yaml.MappingNode {
+				deepMergeInto(existingVal, valNode)
+			} else {
+				dst.Content[prevIdx] = keyNode
+				dst.Content[prevIdx+1] = valNode
+			}
+		} else {
+			seenKeys[keyName] = len(dst.Content)
+			dst.Content = append(dst.Content, keyNode, valNode)
+		}
+	}
 }
 
 // yamlFile holds a found YAML file path.
@@ -287,11 +322,6 @@ func findYAMLFiles(dir string) ([]yamlFile, error) {
 		}
 	}
 
-	// Sort files in this directory alphanumerically
-	sort.Slice(files, func(i, j int) bool {
-		return filepath.Base(files[i].path) < filepath.Base(files[j].path)
-	})
-
 	// Recurse into subdirectories
 	for _, sub := range subdirs {
 		subFiles, err := findYAMLFiles(sub)
@@ -300,6 +330,13 @@ func findYAMLFiles(dir string) ([]yamlFile, error) {
 		}
 		files = append(files, subFiles...)
 	}
+
+	// Sort all files alphanumerically by full path so that subdirectory
+	// files interleave correctly with top-level files (e.g. a/sub/x.yaml
+	// before z.yaml).
+	sort.Slice(files, func(i, j int) bool {
+		return files[i].path < files[j].path
+	})
 
 	return files, nil
 }
